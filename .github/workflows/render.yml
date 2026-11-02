@@ -1,0 +1,40 @@
+name: Render video
+
+on:
+  workflow_dispatch:
+    inputs:
+      composition:
+        description: 'Composition to render'
+        required: true
+        default: 'Short30'
+      output:
+        description: 'Output filename'
+        required: true
+        default: 'video.mp4'
+
+jobs:
+  render:
+    name: Render Remotion Video
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Render video
+        run: npx remotion render src/index.ts "${{ github.event.inputs.composition }}" "out/${{ github.event.inputs.output }}"
+
+      - name: Upload video artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.composition }}-video
+          path: out/${{ github.event.inputs.output }}
